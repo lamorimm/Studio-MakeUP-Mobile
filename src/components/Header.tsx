@@ -16,8 +16,8 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: '#221b0E', // Cor marrom escuro
         width: '100%',
-        paddingVertical: 15,
-        paddingHorizontal: 20,
+        paddingVertical: 0,
+        paddingHorizontal: 0,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5, // Para Android
+        
     },
     logoContainer: {
         alignItems: 'center',
