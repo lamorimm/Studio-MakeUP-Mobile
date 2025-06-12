@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import { MaterialIcons } from '@expo/vector-icons';
 
 interface AddProductModalProps {
@@ -26,7 +25,7 @@ export default function AddProductModal({ visible, onClose, onAddProduct }: AddP
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.8, // Qualidade reduzida para economizar espaço
+      quality: 0.8,
     });
 
     if (!result.canceled && result.assets) {
@@ -61,10 +60,9 @@ export default function AddProductModal({ visible, onClose, onAddProduct }: AddP
     onAddProduct({
       nome,
       preco: parseFloat(preco),
-      imagem: imagem,
+      imagem,
     });
 
-    // Limpa o formulário
     setNome('');
     setPreco('');
     setImagem(null);
@@ -143,6 +141,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,

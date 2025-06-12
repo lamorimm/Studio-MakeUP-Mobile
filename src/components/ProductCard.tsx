@@ -7,13 +7,12 @@ interface ProductCardProps {
     nome: string;
     preco: number;
     imagem?: string;
-    description?: string;
   };
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
-  const { nome, preco, imagem, description } = product;
+  const { nome, preco, imagem } = product;
 
   const handleImageError = () => {
     setImageError(true);
@@ -37,11 +36,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{nome}</Text>
         <Text style={styles.productPrice}>
-          R$ {typeof preco === 'number' ? preco.toFixed(2).replace('.', ',') : '0,00'}
+          R$ {preco.toFixed(2).replace('.', ',')}
         </Text>
-        {description && (
-          <Text style={styles.productDescription}>{description}</Text>
-        )}
         <TouchableOpacity style={styles.buyButton}>
           <Text style={styles.buyButtonText}>Comprar</Text>
         </TouchableOpacity>
@@ -49,7 +45,6 @@ export default function ProductCard({ product }: ProductCardProps) {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   productCard: {
@@ -90,11 +85,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FF6B8B',
     marginBottom: 8,
-  },
-  productDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 15,
   },
   buyButton: {
     backgroundColor: '#FF6B8B',

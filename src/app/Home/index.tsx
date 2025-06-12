@@ -5,10 +5,9 @@ import ProductCard from 'src/components/ProductCard';
 import AddProductModal from 'src/components/AddProductModal';
 
 interface Product {
-  id?: string | number;  
+  nome: string;
   preco: number;
   imagem: string;
-  description?: string;
 }
 
 export default function Home() {
@@ -39,8 +38,8 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-const handleAddProduct = (newProduct: Omit<Product, 'id'>) => {
-  setProducts(prev => [...prev, { ...newProduct, id: `local-${Date.now()}` }]);
+const handleAddProduct = (newProduct: Product) => {
+  setProducts(prev => [newProduct, ...prev]);
 };
 
   if (loading) {
@@ -65,14 +64,20 @@ const handleAddProduct = (newProduct: Omit<Product, 'id'>) => {
       <Header />
       <Text style={styles.welcomeText}>Bem Vindo Ao Studio Makeup</Text>
 
-      <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-        <Text style={styles.addButtonText}>+ Adicionar Produto</Text>
-      </TouchableOpacity>
+      <View style={styles.addButtonContainer}>
+        <TouchableOpacity 
+          style={styles.addButton} 
+          onPress={() => setModalVisible(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.addButtonText}>Adicionar Produto</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView contentContainerStyle={styles.productsContainer}>
-  {products.map((product) => (
-  <ProductCard key={product.id} product={product} />
-))}
+        {products.map((product, index) => (
+          <ProductCard key={index} product={product} />
+        ))}
       </ScrollView>
 
       <View style={styles.contactSection}>
@@ -89,7 +94,6 @@ const handleAddProduct = (newProduct: Omit<Product, 'id'>) => {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -119,55 +123,29 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     color: '#FF6B8B',
   },
+  addButtonContainer: {
+    alignItems: 'center',
+    marginVertical: 15,
+  },
+  addButton: {
+    backgroundColor: '#FF6B8B',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  addButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   productsContainer: {
     paddingHorizontal: 15,
     paddingBottom: 20,
-  },
-  productCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
-  productImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
-  },
-  productInfo: {
-    padding: 15,
-  },
-  productName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#333',
-  },
-  productPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FF6B8B',
-    marginBottom: 8,
-  },
-  productDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 15,
-  },
-  buyButton: {
-    backgroundColor: '#FF6B8B',
-    padding: 12,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  buyButtonText: {
-    color: '#FFF',
-    fontWeight: 'bold',
   },
   contactSection: {
     padding: 20,
