@@ -1,37 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Alert, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
   ActivityIndicator,
   ImageBackground,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useRouter } from 'expo-router';
 import TitleLogo from 'src/components/TitleLogo';
 
-// Definindo os tipos para navegação
-type RootStackParamList = {
-  Login: undefined;
-  Home: undefined;
-  // Adicione outras rotas conforme necessário
-};
-
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
-
-// Interface para o tipo User
 interface User {
   name: string;
   email: string;
   password: string;
 }
 
-const Login = ({ navigation }: Props) => {
+const Login = () => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
@@ -41,76 +32,68 @@ const Login = ({ navigation }: Props) => {
 
   useEffect(() => {
     const loadUsers = async () => {
-      try {
-        const storedUsers = await AsyncStorage.getItem('@users');
-        if (storedUsers) setUsers(JSON.parse(storedUsers));
-      } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-      }
+      const storedUsers = await AsyncStorage.getItem('@users');
+      if (storedUsers) setUsers(JSON.parse(storedUsers));
     };
     loadUsers();
   }, []);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Erro', 'Preencha todos os campos');
-      return;
-    }
-
     setIsLoading(true);
     
     try {
-      const userExists = users.some(
-        user => user.email === email && user.password === password
+      // Busca os usuários registrados
+      const storedUsers = await AsyncStorage.getItem('@users');
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      // Verifica se existe um usuário com o email e senha fornecidos
+      const user = users.find(
+        (u: User) => u.email === email && u.password === password
       );
-
-      if (userExists) {
-        await AsyncStorage.setItem('@currentUser', JSON.stringify({ email }));
-        navigation.replace('Home');
+      
+      if (user) {
+        // Salva o usuário atual e navega para a Home
+        await AsyncStorage.setItem('@currentUser', JSON.stringify(user));
+        router.replace('/Home');
       } else {
-        Alert.alert('Erro', 'Credenciais inválidas');
+        Alert.alert('Erro', 'Email ou senha incorretos');
       }
     } catch (error) {
-      Alert.alert('Erro', 'Falha no login');
-      console.error(error);
+      console.error('Erro no login:', error);
+      Alert.alert('Erro', 'Ocorreu um erro durante o login');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleRegister = async () => {
-    if (!name || !email || !password) {
-      Alert.alert('Erro', 'Preencha todos os campos');
-      return;
-    }
+const handleRegister = async () => {
+  setIsLoading(true);
+  try {
+    const newUser = { name, email, password };
+    const updatedUsers = [...users, newUser];
+    
+    await AsyncStorage.setItem('@users', JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
+    
+    // Limpa os campos do formulário
+    setName('');
+    setEmail('');
+    setPassword('');
+    
+    // Volta para a tela de login sem redirecionar
+    setIsRegistering(false);
+    Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+  } catch (error) {
+    console.error('Erro no registro:', error);
+    Alert.alert('Erro', 'Falha ao cadastrar usuário');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-    setIsLoading(true);
-
-    try {
-      const emailExists = users.some(user => user.email === email);
-      
-      if (emailExists) {
-        Alert.alert('Erro', 'Email já cadastrado');
-        return;
-      }
-
-      const newUser = { name, email, password };
-      const updatedUsers = [...users, newUser];
-      
-      await AsyncStorage.setItem('@users', JSON.stringify(updatedUsers));
-      setUsers(updatedUsers);
-      Alert.alert('Sucesso', `Cadastro realizado para ${name}!`);
-      setIsRegistering(false);
-    } catch (error) {
-      Alert.alert('Erro', 'Falha no cadastro');
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
-    <ImageBackground 
+    <ImageBackground
       source={require('../../../assets/imagem-fundo.jpg')}
       style={styles.backgroundImage}
       resizeMode="cover"
@@ -121,8 +104,10 @@ const Login = ({ navigation }: Props) => {
       >
         <View style={styles.overlay}>
           <TitleLogo />
-          <Text style={styles.title}>{isRegistering ? 'Cadastro' : 'Login'}</Text>
-          
+          <Text style={styles.title}>
+            {isRegistering ? 'Cadastro' : 'Login'}
+          </Text>
+
           {isRegistering && (
             <TextInput
               style={styles.input}
@@ -133,7 +118,7 @@ const Login = ({ navigation }: Props) => {
               placeholderTextColor="#ccc"
             />
           )}
-          
+
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -141,22 +126,20 @@ const Login = ({ navigation }: Props) => {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
-            autoComplete="email"
             placeholderTextColor="#ccc"
           />
-          
+
           <TextInput
             style={styles.input}
             placeholder="Senha"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            autoComplete="password"
             placeholderTextColor="#ccc"
           />
-          
-          <TouchableOpacity 
-            style={styles.button} 
+
+          <TouchableOpacity
+            style={styles.button}
             onPress={isRegistering ? handleRegister : handleLogin}
             disabled={isLoading}
           >
@@ -168,8 +151,8 @@ const Login = ({ navigation }: Props) => {
               </Text>
             )}
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             onPress={() => setIsRegistering(!isRegistering)}
             disabled={isLoading}
           >
@@ -183,6 +166,7 @@ const Login = ({ navigation }: Props) => {
   );
 };
 
+// Mantenha os mesmos estilos
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
