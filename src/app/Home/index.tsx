@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Header from 'src/components/Header';
+import ProductCard from 'src/components/ProductCard';
+import AddProductModal from 'src/components/AddProductModal';
 
 interface Product {
-  id?: number; // Tornando opcional pois a API não envia
-  nome: string; // Alterando para corresponder à API
-  preco: number; // Alterando para número
+  id?: string | number;  
+  preco: number;
   imagem: string;
-  description?: string; // Tornando opcional pois a API não envia
+  description?: string;
 }
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -37,6 +39,10 @@ export default function Home() {
     fetchProducts();
   }, []);
 
+const handleAddProduct = (newProduct: Omit<Product, 'id'>) => {
+  setProducts(prev => [...prev, { ...newProduct, id: `local-${Date.now()}` }]);
+};
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -58,28 +64,15 @@ export default function Home() {
     <View style={styles.container}>
       <Header />
       <Text style={styles.welcomeText}>Bem Vindo Ao Studio Makeup</Text>
-      
+
+      <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+        <Text style={styles.addButtonText}>+ Adicionar Produto</Text>
+      </TouchableOpacity>
+
       <ScrollView contentContainerStyle={styles.productsContainer}>
-        {products.map((product, index) => (
-          <View key={index} style={styles.productCard}>
-            <Image 
-              source={{ uri: product.imagem.trim() }} 
-              style={styles.productImage}
-              onError={() => console.log('Erro ao carregar imagem')}
-              resizeMode="contain"
-            />
-            <View style={styles.productInfo}>
-              <Text style={styles.productName}>{product.nome}</Text>
-              <Text style={styles.productPrice}>R$ {product.preco.toFixed(2).replace('.', ',')}</Text>
-              {product.description && (
-                <Text style={styles.productDescription}>{product.description}</Text>
-              )}
-              <TouchableOpacity style={styles.buyButton}>
-                <Text style={styles.buyButtonText}>Comprar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
+  {products.map((product) => (
+  <ProductCard key={product.id} product={product} />
+))}
       </ScrollView>
 
       <View style={styles.contactSection}>
@@ -87,9 +80,17 @@ export default function Home() {
         <Text style={styles.contactText}>- WhatsApp: (99) 9999-9999</Text>
         <Text style={styles.contactText}>- Instagram: @llais.amorim</Text>
       </View>
+
+      <AddProductModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onAddProduct={handleAddProduct}
+      />
     </View>
   );
 }
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
